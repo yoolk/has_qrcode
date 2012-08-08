@@ -6,7 +6,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["chamnapchhorn@gmail.com", "thaichor@gmail.com"]
   gem.description   = %q{Add qrcode to your active_record models}
   gem.summary       = %q{Add qrcode to your active_record models}
-  gem.homepage      = ""
+  gem.homepage      = "https://github.com/yoolk-os/has_qrcode"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

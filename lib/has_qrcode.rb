@@ -6,4 +6,4 @@ module HasQrcode
   autoload :Hooks,              'has_qrcode/hooks'
 end
 
-require 'has_qrcode/railtie' if defined?(Rails::Railtie)
+require 'has_qrcode/rails/railtie' if defined?(Rails::Railtie)
