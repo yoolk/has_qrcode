@@ -1,12 +1,12 @@
-# ActiverecordQrcode
+# HasQrcode
 
-TODO: Write a gem description
+This gem provides qrcode support to your active_record models
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'activerecord_qrcode'
+    gem 'has_qrcode'
 
 And then execute:
 
@@ -14,16 +14,9 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install activerecord_qrcode
+    $ gem install has_qrcode
 
 ## Usage
 
 TODO: Write usage instructions here
 
-## Contributing
-
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Added some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
