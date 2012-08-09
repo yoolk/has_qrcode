@@ -17,7 +17,7 @@ module HasQrcode::Model
     # :bgcolor  - "white"
     def generate_qrcode(options = {})
       options = self.class.qrcode_options.merge(options)
-      options = default_options(options)
+      options = merge_with_defaults(options)
       
       # generate_path
       filepath_pattern = options.delete(:path) || ":rails_root/public/system/:table_name/:id.:format"
@@ -42,7 +42,7 @@ module HasQrcode::Model
     end
     
     private
-    def default_options(options = {})
+    def merge_with_defaults(options = {})
       defaults = {
         :size     => "250x250",
         :margin   => 0,
