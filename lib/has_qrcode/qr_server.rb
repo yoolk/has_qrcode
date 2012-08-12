@@ -1,5 +1,6 @@
 require 'uri'
 require 'active_support'
+require 'tempfile'
 
 class QrServer
   attr_accessor   :size, :margin, :format, :bgcolor, :color, :ecc,
@@ -33,7 +34,51 @@ class QrServer
     end
   end
   
+  def eps(path, file_name)
+    FileUtils.mkdir_p(path)
+    
+    image = MiniMagick::Image.open(to_s)
+    image.format "eps"
+    image.write  File.join(path, "#{file_name}.eps")
+  end
+  
+  def pdf(path, file_name)
+    FileUtils.mkdir_p(path)
+    
+    image = MiniMagick::Image.open(to_s)
+    image.format "pdf"
+    image.write  File.join(path, "#{file_name}.pdf")
+  end
+  
+  # TODO: decode spec
+  def embed_logo(path, file_name, logo_path)
+    qr_image = MiniMagick::Image.open(to_s)
+    
+    # resize logo
+    logo_size = (qr_image[:width].to_f / 6).ceil
+    logo_image = MiniMagick::Image.open(logo_path)
+    logo_image.resize "#{logo_size-6}x#{logo_size-6}"
+    
+    # create background_image, composite with logo
+    bg_image = new_image(logo_size, logo_size, "png", bgcolor)
+    logo_bg_image = bg_image.composite(logo_image) do |c|
+      c.gravity "center"
+    end
+    
+    # composite with qr_image
+    result = qr_image.composite(logo_bg_image) do |c|
+      c.gravity "center"
+    end
+    result.write File.join(path, "#{file_name}.#{format}")
+  end
+  
   private
+  def new_image(width, height, format = "png", bgcolor = "transparent")
+    tmp = Tempfile.new(%W[mini_magick_ .#{format}])
+    `convert -size #{width}x#{height} xc:#{bgcolor} #{tmp.path}`
+    MiniMagick::Image.new(tmp.path, tmp)
+  end
+  
   #TODO: refactor to use our own class exception
   def validate_options!
     raise RuntimeError if data.blank?
