@@ -17,7 +17,7 @@ module HasQrcode::Model
     # :backend  - :google_qr, :qr_server
     # :storage  - 
     #             :filesystem => { :path => ":rails_root/public/system/:table_name/:id.:format"}
-    #             :s3 => { :bucket_name => "qr_image" }
+    #             :s3 => { :bucket => "qr_image", :access_key_id => "ACCESS_KEY_ID", :secret_access_key => "SECRET_ACCESS_KEY", :acl => :public_read, :prefix => "", :cache_control => "max-age=28800" }
     def generate_qrcode(options = {})
       options = self.class.qrcode_options.merge(options)
       options = merge_with_defaults(options)
