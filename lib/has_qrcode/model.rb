@@ -13,11 +13,11 @@ module HasQrcode::Model
     # :ecc      - "L"
     # :color    - "black"
     # :bgcolor  - "white"
-    # :logo     - path or url of logo
+    # :logo     - a proc object that returns path or url of logo
     # :backend  - :google_qr, :qr_server
     # :storage  - 
-    #             :filesystem => { :path => ":rails_root/public/system/:table_name/:id.:format" }
-    #             :s3 => { :bucket => "qr_image", :access_key_id => "ACCESS_KEY_ID", :secret_access_key => "SECRET_ACCESS_KEY", :acl => :public_read, :prefix => "", :cache_control => "max-age=28800" }
+    #             { :filesystem => { :path => ":rails_root/public/system/:table_name/:id.:format" } }
+    #             { :s3 => { :bucket => "qr_image", :access_key_id => "ACCESS_KEY_ID", :secret_access_key => "SECRET_ACCESS_KEY", :acl => :public_read, :prefix => "", :cache_control => "max-age=28800" } }
     def generate_qrcode(options = {})
       options = self.class.qrcode_options.merge(options)
       options = merge_with_defaults(options)
@@ -28,8 +28,8 @@ module HasQrcode::Model
       storage_name    = storage.try(:keys).try(:first)
       storage_options = storage.try(:values).try(:first) || {}
       
-      # data
-      options[:data] = process_data(options[:data])
+      # process any values that are proc object or symbol
+      options = process_options(options)
       
       # 1. produce result as temp file
       HasQrcode::Processor.backend = backend if backend
@@ -61,17 +61,20 @@ module HasQrcode::Model
       defaults.merge(options)
     end
     
-    def process_data(data)
-      if data.is_a?(String) and data.present?
-        data
-      elsif data.is_a?(Symbol)
-        if respond_to?(data)
-          send(data)
+    def process_options(options)
+      options.inject({}) do |result, item|
+        key, value = item
+        new_value = case value
+        when Symbol
+          self.respond_to?(value) ? self.send(value) : value.to_s
+        when Proc
+          value.call(self)
         else
-          raise RuntimeError, "#{data} is undefined. Please, define it in your model."
+          value
         end
-      elsif data.blank?
-        raise RuntimeError, ":data is blank. Please, pass it in."
+        
+        result[key] = new_value
+        result
       end
     end
   end

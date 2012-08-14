@@ -36,18 +36,6 @@ describe "Model without configuration" do
     
     @listing.generate_qrcode(:data => :vcard_4_0)
   end
-  
-  it "should raise exception when :data is not defined" do
-    proc {
-      @listing.generate_qrcode(:data => :not_found)
-    }.should raise_error RuntimeError, /not_found is undefined/
-  end
-  
-  it "should raise exception when :data is not passed in" do
-    proc {
-      @listing.generate_qrcode
-    }.should raise_error RuntimeError
-  end
 end
 
 describe "Model with configuration" do
