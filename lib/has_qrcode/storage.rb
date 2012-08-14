@@ -1,14 +1,12 @@
 module HasQrcode
-  module Storage
-    extend self
-    
-    def location
+  class Storage
+    def self.location
       return @location if @location
       self.location = :filesystem
       @location
     end
     
-    def location=(location_name)
+    def self.location=(location_name)
       case location_name
       when Symbol, String
         require File.join(File.dirname(__FILE__), "/storages/#{location_name}")
@@ -18,8 +16,8 @@ module HasQrcode
       end
     end
     
-    def copy_to_location(from_paths, active_record, options)
-      location.copy_to_location(from_paths, active_record, options)
+    def self.create(active_record, options)
+      location.new(active_record, options)
     end
   end
 end

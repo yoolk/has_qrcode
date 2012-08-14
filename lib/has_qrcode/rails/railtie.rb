@@ -1,7 +1,7 @@
 module HasQrcode
   class Railtie < Rails::Railtie
-    initializer do
-      ActiverecordQrcode::Hooks.init
+    initializer "load qrcode modules" do
+      HasQrcode::Hooks.init
       AWS.config(:logger => Rails.logger) if defined?(AWS)
     end
     

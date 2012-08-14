@@ -1,43 +1,56 @@
 require 'fileutils'
 
-module HasQrcode::Storage::Filesystem
-  extend self
+class HasQrcode::Storage::Filesystem
+
+  attr_reader :active_record, :options
+  def initialize(active_record, options)
+    @active_record = active_record
+    @options = options
+  end
   
-  def copy_to_location(from_paths, active_record, options={})
-    path_pattern = options[:path] || ":rails_root/public/system/:table_name/:id/:id.:format"
+  def copy_to_location(from_paths)
+    remove_archives
     
-    to_paths = []
     from_paths.each do |from_path|
-      to_paths << generate_to_path(path_pattern, File.extname(from_path)[1..-1], active_record)
+      to_path = generate_to_path(path, active_record, :format => File.extname(from_path)[1..-1], :filename => active_record.qrcode_filename)
       
-      FileUtils.mkdir_p(File.dirname(to_paths.last))
-      FileUtils.mv(from_path, to_paths.last, :force => true)
+      FileUtils.mkdir_p(File.dirname(to_path))
+      FileUtils.mv(from_path, to_path, :force => true)
     end
-    to_paths
+  end
+  
+  def remove_archives
+    file_path = generate_to_path(path, active_record, :filename => active_record.qrcode_filename_was, :format => "*")
+    FileUtils.rm_rf Dir.glob(file_path)
   end
   
   private
-  def generate_to_path(pattern, format, active_record)
+  def path
+    options[:path] || ":rails_root/public/system/:table_name/:id/:filename.:format"
+  end
+  
+  def generate_to_path(path, active_record, values)
     default_values = {
-      :rails_root => Rails.root,
-      :format     => format
+      :rails_root => Rails.root
     }
+    values = default_values.merge(values)
     
-    path = pattern.clone
-    pattern.scan(/:\w+/) do |key|
+    generated_path = path.clone
+    segments = path.scan(/:\w+/)
+    segments.each do |key|
       key = key[1..-1].to_sym
       value = if active_record.respond_to?(key)
         active_record.send(key)
       elsif active_record.class.respond_to?(key)
         active_record.class.send(key)
       else
-        default_values[key]
+        values[key]
       end
 
-      path.gsub!(/:#{key}/, value.to_s)
+      generated_path.gsub!(/:#{key}/, value.to_s)
     end
 
-    path
+    generated_path
   end
 end
 

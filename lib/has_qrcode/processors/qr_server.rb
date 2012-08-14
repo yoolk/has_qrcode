@@ -1,5 +1,6 @@
 require 'mini_magick'
 require 'tempfile'
+require 'has_qrcode/qr_server'
 
 module HasQrcode::Processor::QrServer
   extend self
@@ -7,36 +8,37 @@ module HasQrcode::Processor::QrServer
   # TODO: decode spec
   def write_temp_file(options)
     # remove some options
-    formats   = [options.delete(:format)].flatten
-    logo_url  = options.delete(:logo_url)
+    formats = [options.delete(:format)].flatten
+    logo    = options.delete(:logo)
     
     # generate image from qr_server
     qr_server = QrServer.new(options)
-    qr_image  = MiniMagick::Image.open(qr_server.to_s)
-    qr_image  = embed_logo(qr_image, logo_url, qr_server.bgcolor) if logo_url
+    qr_image  = MiniMagick::Image.open(qr_server.to_s, ".png")
+    qr_image  = embed_logo(qr_image, logo, qr_server.bgcolor) if logo
     
-    # write images into multiple formats
-    qr_image_paths = []
-    formats.each do |format|
-      qr_image_paths << write_image(qr_image, format)
+    # qrcode image paths
+    qr_paths  = []
+    qr_paths  << qr_image.path
+    
+    other_formats = formats.delete_if { |format| format == "png" }
+    other_formats.each do |format|
+      qr_paths << convert_image(qr_image.path, format)
     end
-    qr_image_paths
+    
+    qr_paths
   end
   
   private
-  def write_image(image, format)
-    image_path = Tempfile.new(%W[qr_server .#{format}]).path
-    image.format format
-    image.write  image_path
-    
-    image_path
+  def convert_image(image_path, format)
+    `mogrify -format #{format} #{image_path}`
+    image_path.gsub(File.extname(image_path), ".#{format}")
   end
   
-  def embed_logo(qr_image, logo_url, bgcolor)
+  def embed_logo(qr_image, logo, bgcolor)
 
     # resize logo
     logo_size = (qr_image[:width] / 6)
-    logo_image = MiniMagick::Image.open(logo_path)
+    logo_image = MiniMagick::Image.open(logo)
     logo_image.resize "#{logo_size}x#{logo_size}"
     
     # create background_image, composite with logo

@@ -13,10 +13,10 @@ module HasQrcode::Model
     # :ecc      - "L"
     # :color    - "black"
     # :bgcolor  - "white"
-    # :logo_url - logo_url
+    # :logo     - path or url of logo
     # :backend  - :google_qr, :qr_server
     # :storage  - 
-    #             :filesystem => { :path => ":rails_root/public/system/:table_name/:id.:format"}
+    #             :filesystem => { :path => ":rails_root/public/system/:table_name/:id.:format" }
     #             :s3 => { :bucket => "qr_image", :access_key_id => "ACCESS_KEY_ID", :secret_access_key => "SECRET_ACCESS_KEY", :acl => :public_read, :prefix => "", :cache_control => "max-age=28800" }
     def generate_qrcode(options = {})
       options = self.class.qrcode_options.merge(options)
@@ -31,13 +31,21 @@ module HasQrcode::Model
       # data
       options[:data] = process_data(options[:data])
       
-      # produce result as temp file
+      # 1. produce result as temp file
       HasQrcode::Processor.backend = backend if backend
-      qr_image_paths = HasQrcode::Processor.write_temp_file(options)
+      temp_image_paths = HasQrcode::Processor.write_temp_file(options)
       
-      # copy temp file to its final destination
+      # 2. Assign storage
+      # 3. remove old images
+      # 4. copy temp file to its final destination
+      self.qrcode_filename = SecureRandom.hex(16)
       HasQrcode::Storage.location = storage_name if storage_name
-      HasQrcode::Storage.copy_to_location(qr_image_paths, self, storage_options)
+      storage = HasQrcode::Storage.create(self, storage_options)
+      storage.copy_to_location(temp_image_paths)
+      
+      # 4. run callback
+      callback = self.class.after_generate
+      send(callback) if callback and respond_to?(callback)
     end
     
     private
@@ -63,15 +71,20 @@ module HasQrcode::Model
           raise RuntimeError, "#{data} is undefined. Please, define it in your model."
         end
       elsif data.blank?
-        raise RuntimeError, "#{data} is blank. Please, pass it in."
+        raise RuntimeError, ":data is blank. Please, pass it in."
       end
     end
   end
   
   module ClassMethods
+    def after_generate(method_name=nil)
+      return @after_generate if method_name.nil?
+      @after_generate = method_name
+    end
+    
     def has_qrcode(options={})
       @options = options
-       
+      
       self.after_save :generate_qrcode
     end
     

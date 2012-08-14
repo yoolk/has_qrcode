@@ -7,22 +7,20 @@ describe "Model without configuration" do
   end
   
   after(:all) do
-    FileUtils.rm_rf("/tmp/public/system/listings/100.png")
+    FileUtils.rm_rf("/tmp/public/system/listings/*")
     FileUtils.rm_rf("/tmp/100.png")
   end
   
   it "should generate image to default location" do
-    qrcode_path = @listing.generate_qrcode(:data => "HelloWorld!")
+    @listing.generate_qrcode(:data => "HelloWorld!")
     
-    qrcode_path.should == ["/tmp/public/system/listings/100/100.png"]
-    File.exist?(qrcode_path[0]).should eq(true)
+    Dir.glob("/tmp/public/system/listings/100/*.png").count.should > 0
   end
   
   it "should generate image to a specified location" do
-    qrcode_path = @listing.generate_qrcode(:data => "HelloWorld!", :storage => {:filesystem => { :path => "/tmp/:id.:format" }})
+    @listing.generate_qrcode(:data => "HelloWorld!", :storage => {:filesystem => { :path => "/tmp/:id.:format" }})
     
-    qrcode_path.should == ["/tmp/100.png"]
-    File.exist?(qrcode_path[0]).should eq(true)
+    File.exist?("/tmp/100.png").should eq(true)
   end
   
   it "should receive call with value from :data option" do
@@ -64,17 +62,15 @@ describe "Model with configuration" do
   end
   
   it "should generate image based on pre-configuration" do
-    qrcode_path = @listing.generate_qrcode(:data => "HelloWorld!")
+    @listing.generate_qrcode(:data => "HelloWorld!")
     
-    qrcode_path.should == ["/tmp/100.png"]
-    File.exist?(qrcode_path[0]).should eq(true)
+    File.exist?("/tmp/100.png").should eq(true)
   end
   
   it "should generate image based on the overwrite options" do
-    qrcode_path = @listing.generate_qrcode(:data => "HelloWorld!", :format => "jpeg")
+    @listing.generate_qrcode(:data => "HelloWorld!", :format => "jpeg")
     
-    qrcode_path.should == ["/tmp/100.jpeg"]
-    File.exist?(qrcode_path[0]).should eq(true)
+    File.exist?("/tmp/100.jpeg").should eq(true)
   end
 end
 
