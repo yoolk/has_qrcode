@@ -15,6 +15,7 @@ module HasQrcode::Processor::QrServer
     qr_server = QrServer.new(options)
     qr_image  = MiniMagick::Image.open(qr_server.to_s, ".png")
     qr_image  = embed_logo(qr_image, logo, qr_server.bgcolor) if logo
+    qr_image.format "png"
     
     # qrcode image paths
     qr_paths  = []
@@ -31,7 +32,7 @@ module HasQrcode::Processor::QrServer
   private
   def convert_image(image_path, format)
     `mogrify -format #{format} #{image_path}`
-    image_path.gsub(File.extname(image_path), ".#{format}")
+    image_path.gsub(/#{File.extname(image_path)}$/, ".#{format}")
   end
   
   def embed_logo(qr_image, logo, bgcolor)

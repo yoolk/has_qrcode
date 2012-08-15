@@ -13,7 +13,7 @@ class HasQrcode::Storage::S3
   end
   
   def copy_to_location(from_paths)
-    remove_archives
+    remove_archives if has_qrcode_before?
     
     bucket = s3_bucket
     bucket = s3.buckets.create(:name => bucket_name) unless s3_bucket.exists?
@@ -27,11 +27,18 @@ class HasQrcode::Storage::S3
   end
   
   def remove_archives
-    #with_prefix(options[:prefix]).
-    s3_bucket.objects.delete_if { |o| o.key.start_with?(active_record.qrcode_filename_was) }
+    s3_bucket.objects.with_prefix(options[:prefix]).delete_if { |o| o.key.to_s.include?(active_record.qrcode_filename_was) }
+  end
+  
+  def generate_url(format)
+    s3_bucket.objects["#{active_record.qrcode_filename}.#{format}"].public_url
   end
   
   private
+  def has_qrcode_before?
+    active_record.qrcode_filename_was.present?
+  end
+  
   def has_credentials?
     options[:access_key_id] and options[:secret_access_key]
   end

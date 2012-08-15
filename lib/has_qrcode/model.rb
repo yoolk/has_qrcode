@@ -22,14 +22,14 @@ module HasQrcode::Model
       options = self.class.qrcode_options.merge(options)
       options = merge_with_defaults(options)
       
+      # process any values that are proc object or symbol
+      options = process_options(options)
+      
       # extract some options out
       backend = options.delete(:backend)
       storage = options.delete(:storage)
       storage_name    = storage.try(:keys).try(:first)
       storage_options = storage.try(:values).try(:first) || {}
-      
-      # process any values that are proc object or symbol
-      options = process_options(options)
       
       # 1. produce result as temp file
       HasQrcode::Processor.backend = backend if backend
@@ -40,12 +40,17 @@ module HasQrcode::Model
       # 4. copy temp file to its final destination
       self.qrcode_filename = SecureRandom.hex(16)
       HasQrcode::Storage.location = storage_name if storage_name
-      storage = HasQrcode::Storage.create(self, storage_options)
-      storage.copy_to_location(temp_image_paths)
+      @qr_storage = HasQrcode::Storage.create(self, storage_options)
+      @qr_storage.copy_to_location(temp_image_paths)
+      self.class.update_all("qrcode_filename = '#{self.qrcode_filename}'", "#{self.class.primary_key} = '#{self.id}'")
       
       # 4. run callback
       callback = self.class.after_generate
       send(callback) if callback and respond_to?(callback)
+    end
+    
+    def qrcode_url(format = "png")
+      @qr_storage.generate_url(format).to_s
     end
     
     private

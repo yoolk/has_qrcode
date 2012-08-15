@@ -1,9 +1,9 @@
 namespace :qrcode do
   task :require do
     begin
-      require 'progressbar'
+      require 'progress_bar'
     rescue LoadError
-      puts "Failed to load progressbar gem. Please, run `gem install progressbar`."
+      puts "Failed to load progressbar gem. Please, run `gem install progress_bar`."
     end
   end
   
@@ -14,7 +14,6 @@ namespace :qrcode do
     raise "Model '#{model_name}' is missing." if model_name.blank?
     model = Object.const_get(model_name)
     
-    pbar = ProgressBar.new("Generating", (model.count/1000).ceil)
     scoped = if scope_name.blank?
       model
     elsif model.respond_to?(scope_name)
@@ -22,12 +21,11 @@ namespace :qrcode do
     else
       raise "Scope '#{scope_name}' does not exist in your model."
     end
-
-    scoped.find_in_batches do |records|
-      records.each(&:generate_qrcode)
-      pbar.inc
-    end
     
-    pbar.finish
+    pbar = ProgressBar.new(scoped.count)
+    scoped.find_each do |record|
+      record.generate_qrcode
+      pbar.increment!
+    end
   end
 end
