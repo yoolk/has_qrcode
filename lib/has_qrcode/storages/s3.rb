@@ -18,9 +18,7 @@ class HasQrcode::Storage::S3
     bucket = s3_bucket
     bucket = s3.buckets.create(:name => bucket_name) unless s3_bucket.exists?
     from_paths.each do |from_path|
-      key    = active_record.qrcode_filename + File.extname(from_path)
-      key    = "#{options[:prefix]}/#{key}"  if options[:prefix]
-      
+      key = s3_key(File.extname(from_path)[1..-1])
       bucket.objects.create(key, :file => from_path, :acl => options[:acl], :cache_control => options[:cache_control])
       FileUtils.rm_rf(from_path)
     end
@@ -31,7 +29,7 @@ class HasQrcode::Storage::S3
   end
   
   def generate_url(format)
-    s3_bucket.objects["#{active_record.qrcode_filename}.#{format}"].public_url
+    s3_bucket.objects[s3_key(format)].public_url
   end
   
   private
@@ -56,5 +54,10 @@ class HasQrcode::Storage::S3
   
   def s3_bucket
     s3.buckets[options[:bucket]]
+  end
+  
+  def s3_key(format)
+    key = active_record.qrcode_filename + ".#{format}"
+    "#{options[:prefix]}/#{key}"
   end
 end

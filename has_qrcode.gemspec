@@ -17,7 +17,9 @@ Gem::Specification.new do |gem|
   
   gem.add_development_dependency "bundler", ">= 1.1.4"
   gem.add_development_dependency "rspec", "~> 2.8.0"
-  gem.add_development_dependency "mysql2"
+  gem.add_development_dependency "sqlite3"
+  gem.add_development_dependency "jruby-jars", "~> 1.6.7.2"
+  gem.add_development_dependency "zxing", "~> 0.3.1"
   
   gem.add_dependency "activerecord", "~> 3.0"
   gem.add_dependency "mini_magick", "~> 3.4"

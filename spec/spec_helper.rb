@@ -1,4 +1,5 @@
-require 'has_qrcode'
+require 'bundler/setup'
+Bundler.require(:default, :development)
 
 # make db connection
 ActiveRecord::Base.establish_connection(:adapter => "sqlite3", 

@@ -25,12 +25,12 @@ class HasQrcode::Storage::Filesystem
   end
   
   def generate_url(format)
-    generate_to_path(path, active_record, :format => format, :filename => active_record.qrcode_filename, :rails_root => "")
+    generate_to_path(path, active_record, :format => format, :filename => active_record.qrcode_filename).gsub(/^#{Rails.root}\/public/, "")
   end
   
   private
   def path
-    options[:path] || ":rails_root/public/system/:table_name/:id/:filename.:format"
+    options[:path]
   end
   
   def generate_to_path(path, active_record, values)

@@ -19,54 +19,41 @@ module HasQrcode::Model
     #             { :filesystem => { :path => ":rails_root/public/system/:table_name/:id.:format" } }
     #             { :s3 => { :bucket => "qr_image", :access_key_id => "ACCESS_KEY_ID", :secret_access_key => "SECRET_ACCESS_KEY", :acl => :public_read, :prefix => "", :cache_control => "max-age=28800" } }
     def generate_qrcode(options = {})
-      options = self.class.qrcode_options.merge(options)
-      options = merge_with_defaults(options)
+      # setup
+      setup(options)
       
-      # process any values that are proc object or symbol
-      options = process_options(options)
+      # generate to final
+      temp_image_paths = HasQrcode::Processor.write_temp_file(qrcode_config.qrcode_options)
       
-      # extract some options out
-      backend = options.delete(:backend)
-      storage = options.delete(:storage)
-      storage_name    = storage.try(:keys).try(:first)
-      storage_options = storage.try(:values).try(:first) || {}
-      
-      # 1. produce result as temp file
-      HasQrcode::Processor.backend = backend if backend
-      temp_image_paths = HasQrcode::Processor.write_temp_file(options)
-      
-      # 2. Assign storage
-      # 3. remove old images
-      # 4. copy temp file to its final destination
+      # generate new filename
       self.qrcode_filename = SecureRandom.hex(16)
-      HasQrcode::Storage.location = storage_name if storage_name
-      @qr_storage = HasQrcode::Storage.create(self, storage_options)
-      @qr_storage.copy_to_location(temp_image_paths)
+      
+      # copy to its location
+      qrcode_storage.copy_to_location(temp_image_paths)
+      
+      # update db
       self.class.update_all("qrcode_filename = '#{self.qrcode_filename}'", "#{self.class.primary_key} = '#{self.id}'")
       
-      # 4. run callback
+      # run callback
       callback = self.class.after_generate
       send(callback) if callback and respond_to?(callback)
     end
     
-    def qrcode_url(format = "png")
-      @qr_storage.generate_url(format).to_s
+    def qrcode_url(format)
+      setup({}) if qrcode_config.nil? and qrcode_storage.nil?
+      qrcode_storage.generate_url(format).to_s
     end
     
     private
-    def merge_with_defaults(options = {})
-      defaults = {
-        :size     => "250x250",
-        :margin   => 0,
-        :ecc      => "L",
-        :color    => "000",
-        :bgcolor  => "fff",
-        :format   => "png"
-      }
-      defaults.merge(options)
+    def setup(options)
+      new_options = process_qrcode_options(qrcode_options.merge(options))
+      @qrcode_config = HasQrcode::Configuration.new(new_options)
+      HasQrcode::Processor.backend = qrcode_config.backend_name
+      HasQrcode::Storage.location  = qrcode_config.storage_name
+      @qrcode_storage = HasQrcode::Storage.create(self, qrcode_config.storage_options)
     end
     
-    def process_options(options)
+    def process_qrcode_options(options)
       options.inject({}) do |result, item|
         key, value = item
         new_value = case value
@@ -91,13 +78,11 @@ module HasQrcode::Model
     end
     
     def has_qrcode(options={})
-      @options = options
+      attr_reader :qrcode_config, :qrcode_storage
+      class_attribute :qrcode_options
+      self.qrcode_options = options
       
       self.after_save :generate_qrcode
-    end
-    
-    def qrcode_options
-      @options || {}
     end
   end
 end

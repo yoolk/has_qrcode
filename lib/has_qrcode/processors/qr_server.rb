@@ -7,7 +7,9 @@ module HasQrcode::Processor::QrServer
   
   # TODO: decode spec
   def write_temp_file(options)
+  
     # remove some options
+    options = options.dup
     formats = [options.delete(:format)].flatten
     logo    = options.delete(:logo)
     
