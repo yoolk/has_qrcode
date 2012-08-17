@@ -16,7 +16,7 @@ Or install it yourself as:
 
     $ gem install has_qrcode
 
-## Quick Start
+## Usage
 
 In your model:
 
@@ -45,26 +45,26 @@ In your show view:
 
     <%= image_tag @article.qrcode_url(:png) %>
 
-HasQrcode Options
+### HasQrcode Options
 
 By default, all has_qrcode options are evaluated at runtime on instance object level so that it can be dynamically for each instance. You can specify the value as symbol or a proc object.
 
-Processor
+### Processor
 
 Currently, HasQrcode supports only one processor which connects to the QR-Server API, http://qrserver.com/api/documentation/.
 
     has_attached_file :processor => :qr_server
 
-Storage
+### Storage
 
 HasQrcode ships with 2 storage adapters:
 
-    File Storage
-    S3 Storage (via aws-sdk)
+* File Storage
+* S3 Storage (via aws-sdk)
     
 The image files that are generated, by default, placed in the directory specified by the :storage option to has_qrcode. By default, on :filesystem the location is :rails_root/public/system/:table_name/:id/:filename.:format.
 
-    has_qrcode  :storage => { :filesystem => { :path => ":rails_root/public/system/:table_name/:id.:format" } }
+    has_qrcode  :storage => { :filesystem => { :path => ":rails_root/public/system/:table_name/:id/:filename.:format" } }
 
 You may also choose to store your files using Amazon's S3 service. To do so, include the aws-sdk gem in your Gemfile:
 
@@ -74,16 +74,18 @@ And then you can specify using S3 from has_qrcode.
 
     has_qrcode  :storage => { :s3 => { :bucket => "qrcode-images", :prefix => "kh", :acl => :public_read, :cache_control => "max-age=28800" } }
     
+You can pass the aws credentials (`access_key_id` and `secret_access_key`) in the storage options here or create `aws.yml` in your `config` directory.
+    
 By default, the qrcode_filename is generated randomly using the standard ruby library `SecureRandom`.
 
-Rake Script
+### Rake Script
 
 This gem provides one rake script to generate qrcode images for a specified model.
 
     $ rake qrcode:generate[model_name,scope_name,scope_value]
     $ rake qrcode:generate[Article,by_author,Chamnap] # generate qrcode images for Article posted by author, Chamnap.
     
-TODO
+### TODO
 - Add more specs
 - Support rqrcode processor and google-qr
 - Support multiple sizes

@@ -16,7 +16,7 @@ module HasQrcode::Model
     # :logo     - a proc object that returns path or url of logo
     # :backend  - :google_qr, :qr_server
     # :storage  - 
-    #             { :filesystem => { :path => ":rails_root/public/system/:table_name/:id.:format" } }
+    #             { :filesystem => { :path => ":rails_root/public/system/:table_name/:id/:filename.:format" } }
     #             { :s3 => { :bucket => "qr_image", :access_key_id => "ACCESS_KEY_ID", :secret_access_key => "SECRET_ACCESS_KEY", :acl => :public_read, :prefix => "", :cache_control => "max-age=28800" } }
     def generate_qrcode(options = {})
       # setup
