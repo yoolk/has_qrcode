@@ -3,7 +3,7 @@ namespace :qrcode do
     begin
       require 'progress_bar'
     rescue LoadError
-      puts "Failed to load progressbar gem. Please, run `gem install progress_bar`."
+      puts "Failed to load progress_bar gem. Please, run `gem install progress_bar`."
     end
   end
   

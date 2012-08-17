@@ -5,7 +5,6 @@ require 'has_qrcode/qr_server'
 module HasQrcode::Processor::QrServer
   extend self
   
-  # TODO: decode spec
   def write_temp_file(options)
   
     # remove some options

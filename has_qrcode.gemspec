@@ -4,8 +4,8 @@ require File.expand_path('../lib/has_qrcode/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["Chamnap", "Thaichor"]
   gem.email         = ["chamnapchhorn@gmail.com", "thaichor@gmail.com"]
-  gem.description   = %q{Add qrcode to your active_record models}
-  gem.summary       = %q{Add qrcode to your active_record models}
+  gem.description   = %q{A gem that generates qrcode images for activerecord models}
+  gem.summary       = %q{A gem that generates qrcode images for activerecord models}
   gem.homepage      = "https://github.com/yoolk-os/has_qrcode"
 
   gem.files         = `git ls-files`.split($\)

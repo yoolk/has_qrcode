@@ -1,7 +1,6 @@
 module HasQrcode
   module Processor
     extend self
-    # write to template
     
     def backend
       return @backend if @backend
