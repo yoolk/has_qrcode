@@ -24,8 +24,19 @@ class HasQrcode::Storage::S3
     end
   end
   
+  #TODO: improve it later
   def remove_archives
-    s3_bucket.objects.with_prefix(options[:prefix]).delete_if { |o| o.key.to_s.include?(active_record.qrcode_filename_was) }
+    key = active_record.qrcode_filename_was
+    key = "#{prefix}/#{key}" if prefix
+    
+    keys = ["png", "eps", "pdf"].inject([]) do |result, format|
+      result << "#{key}.#{format}"
+    end
+    s3_bucket.objects.delete(keys)
+  end
+  
+  def file_exist?(format)
+    s3_bucket.objects[s3_key(format)].exists?
   end
   
   def generate_url(format)
@@ -39,6 +50,10 @@ class HasQrcode::Storage::S3
   
   def has_credentials?
     options[:access_key_id] and options[:secret_access_key]
+  end
+  
+  def prefix
+    options[:prefix] || ""
   end
 
   def s3

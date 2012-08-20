@@ -30,7 +30,7 @@ In your model:
                    :bgcolor => "fff",          # optional, default is "fff"
                    :color   => "000",          # optional, default is "000"
                    :processor => :qr_server    # optional, default is :qr_server for now (might be changed in the future)
-                   :storage => { :filesystem => { :path => ":rails_root/public/system/:table_name/:id.:format" } }
+                   :storage => { :filesystem => { :path => ":rails_root/public/system/:table_name/:id/:filename.:format" } }
     end
 
 In your migrations:
@@ -45,9 +45,15 @@ In your show view:
 
     <%= image_tag @article.qrcode_url(:png) %>
 
+In your rails console:
+
+    Article.first.generate_qrcode!
+    
 ### HasQrcode Options
 
 By default, all has_qrcode options are evaluated at runtime on instance object level so that it can be dynamically for each instance. You can specify the value as `symbol` or a `proc` object.
+
+To generate qrcode image for any record, just call `generate_qrcode`. When you call it without any arguments, it will use options from `has_qrcode`. You can call it with different options from `has_qrcode`, and it won't affect your model `has_qrcode` options.
 
 ### Processor
 

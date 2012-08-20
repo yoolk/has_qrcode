@@ -28,6 +28,12 @@ class HasQrcode::Storage::Filesystem
     generate_to_path(path, active_record, :format => format, :filename => active_record.qrcode_filename).gsub(/^#{Rails.root}\/public/, "")
   end
   
+  def file_exist?(format)
+    filepath = generate_to_path(path, active_record, :format => format, :filename => active_record.qrcode_filename)
+    
+    File.exist?(filepath)
+  end
+  
   private
   def path
     options[:path]

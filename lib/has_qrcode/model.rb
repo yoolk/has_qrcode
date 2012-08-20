@@ -20,7 +20,7 @@ module HasQrcode::Model
     #             { :s3 => { :bucket => "qr_image", :access_key_id => "ACCESS_KEY_ID", :secret_access_key => "SECRET_ACCESS_KEY", :acl => :public_read, :prefix => "", :cache_control => "max-age=28800" } }
     def generate_qrcode(options = {})
       # setup
-      setup(options)
+      qrcode_setup(options)
       
       # generate to final
       temp_image_paths = HasQrcode::Processor.write_temp_file(qrcode_config.qrcode_options)
@@ -40,12 +40,24 @@ module HasQrcode::Model
     end
     
     def qrcode_url(format)
-      setup({}) if qrcode_config.nil? and qrcode_storage.nil?
+      qrcode_setup_if_not_exist
+      
       qrcode_storage.generate_url(format).to_s
     end
     
+    # check against its storage
+    def qrcode_exist?(format)
+      qrcode_setup_if_not_exist
+      
+      qrcode_storage.file_exist?(format)
+    end
+    
     private
-    def setup(options)
+    def qrcode_setup_if_not_exist
+      qrcode_setup if qrcode_config.nil? and qrcode_storage.nil?
+    end
+    
+    def qrcode_setup(options={})
       new_options = process_qrcode_options(qrcode_options.merge(options))
       @qrcode_config = HasQrcode::Configuration.new(new_options)
       HasQrcode::Processor.backend = qrcode_config.backend_name

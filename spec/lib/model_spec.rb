@@ -74,6 +74,12 @@ describe "Model with has_qrcode" do
     
     ZXing.decode(qrcode_path).should eq(@listing.vcard_4_0)
   end
+  
+  it "should return true if the file exist" do
+    @listing.generate_qrcode
+    
+    @listing.qrcode_exist?("png").should eq(true)
+  end
 end
 
 describe "Hook after_save" do
