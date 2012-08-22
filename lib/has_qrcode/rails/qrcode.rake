@@ -24,7 +24,11 @@ namespace :qrcode do
     
     pbar = ProgressBar.new(scoped.count)
     scoped.find_each do |record|
-      record.generate_qrcode
+      begin
+        record.generate_qrcode
+      rescue => e
+        puts "#{e} for #{record.class.name}: #{record.id}"
+      end
       pbar.increment!
     end
   end

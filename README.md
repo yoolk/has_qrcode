@@ -55,6 +55,8 @@ By default, all has_qrcode options are evaluated at runtime on instance object l
 
 To generate qrcode image for any record, just call `generate_qrcode`. When you call it without any arguments, it will use options from `has_qrcode`. You can call it with different options from `has_qrcode`, and it won't affect your model `has_qrcode` options.
 
+HasQrcode will add `after_save` callback to generate qrcode image after the record is saved.
+
 ### Processor
 
 Currently, HasQrcode supports only one processor which connects to the [QR-Server API](http://qrserver.com/api/documentation/).
@@ -90,6 +92,15 @@ This gem provides one rake script to generate qrcode images for a specified mode
 
     $ rake qrcode:generate[model_name,scope_name,scope_value]
     $ rake qrcode:generate[Article,by_author,Chamnap] # generate qrcode images for Article posted by author, Chamnap.
+    
+### Testing
+
+In your rails application in test environment, add `stub_request: true` in your `config/aws.yml` on `test:` section so that it won't send any real requests to amazon.
+
+To turn off the callback that generates qrcode images, call one of the followings in your spec support helper.
+
+  - Listing.skip_callback(:save, :after, :generate_qrcode)
+  - Listing.reset_callbacks(:save)
     
 ### TODO
 - Add more specs

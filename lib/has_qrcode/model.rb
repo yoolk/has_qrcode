@@ -42,7 +42,7 @@ module HasQrcode::Model
     def qrcode_url(format)
       qrcode_setup_if_not_exist
       
-      qrcode_storage.generate_url(format).to_s
+      qrcode_storage.generate_url(format)
     end
     
     # check against its storage

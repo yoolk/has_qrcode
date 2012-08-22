@@ -59,12 +59,10 @@ class HasQrcode::Storage::S3
   def s3
     return @s3 if @s3
     
-    s3_config = if has_credentials?
-      AWS.config.with(:access_key_id => options[:access_key_id], :secret_access_key => options[:secret_access_key])
-    else
-      AWS.config.credentials
+    if has_credentials?
+      AWS.config(:access_key_id => options[:access_key_id], :secret_access_key => options[:secret_access_key])
     end
-    @s3 = AWS::S3.new(:config => AWS::Core::Configuration.new(s3_config))
+    @s3 = AWS::S3.new
   end
   
   def s3_bucket
@@ -72,7 +70,7 @@ class HasQrcode::Storage::S3
   end
   
   def s3_key(format)
-    key = active_record.qrcode_filename + ".#{format}"
+    key = active_record.qrcode_filename.to_s + ".#{format}"
     "#{options[:prefix]}/#{key}"
   end
 end
