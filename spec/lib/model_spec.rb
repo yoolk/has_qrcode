@@ -1,8 +1,8 @@
 require 'spec_helper'
 describe "Model with has_qrcode" do
   before(:all) do
-    @listing = ListingDefault.new
-    @listing.id = 100
+    l = Listing.new; l.id = 100; l.save
+    @listing = ListingDefault.find(100)
   end
   let(:qrcode_path) { "/tmp/public" + @listing.qrcode_url("png") }
   
@@ -82,17 +82,17 @@ describe "Model with has_qrcode" do
   end
 end
 
-describe "Hook after_save" do
+describe "Hook before_save" do
   before(:each) do
     FileUtils.rm_rf("/tmp/public/system/listings/*")
   end
   
   it "should generate image when save" do
     @listing = ListingDefault.new(:name => "Hello Word")
-    @listing.id = 100
+    @listing.id = 101
     @listing.save
     
-    Dir.glob("/tmp/public/system/listings/100/*.png").count.should > 0
+    Dir.glob("/tmp/public/system/listings/101/*.png").count.should > 0
   end
 end
 

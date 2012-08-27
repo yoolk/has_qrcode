@@ -31,3 +31,6 @@ class ListingSetting < ActiveRecord::Base
     { :filesystem => { :path => "/tmp/:table_name/:id.:format" }}
   end
 end
+
+class Listing < ActiveRecord::Base
+end

@@ -16,7 +16,7 @@ class HasQrcode::Storage::S3
     remove_archives if has_qrcode_before?
     
     bucket = s3_bucket
-    bucket = s3.buckets.create(:name => bucket_name) unless s3_bucket.exists?
+    bucket = s3.buckets.create(:name => options[:bucket]) unless s3_bucket.exists?
     from_paths.each do |from_path|
       key = s3_key(File.extname(from_path)[1..-1])
       bucket.objects.create(key, :file => from_path, :acl => options[:acl], :cache_control => options[:cache_control])

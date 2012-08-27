@@ -23,20 +23,13 @@ module HasQrcode::Model
       qrcode_setup(options)
       
       # generate to final
-      temp_image_paths = HasQrcode::Processor.write_temp_file(qrcode_config.qrcode_options)
+      @qrcode_image_paths = HasQrcode::Processor.write_temp_file(qrcode_config.qrcode_options)
       
       # generate new filename
       self.qrcode_filename = SecureRandom.hex(16)
       
-      # copy to its location
-      qrcode_storage.copy_to_location(temp_image_paths)
-      
-      # update db
-      self.class.update_all("qrcode_filename = '#{self.qrcode_filename}'", "#{self.class.primary_key} = '#{self.id}'")
-      
-      # run callback
-      callback = self.class.after_generate
-      send(callback) if callback and respond_to?(callback)
+      # copy to location
+      copy_qrcode_images unless new_record?
     end
     
     def qrcode_url(format)
@@ -53,6 +46,10 @@ module HasQrcode::Model
     end
     
     private
+    def copy_qrcode_images
+      qrcode_storage.copy_to_location(@qrcode_image_paths) if @qrcode_image_paths.present?
+    end
+
     def qrcode_setup_if_not_exist
       qrcode_setup if qrcode_config.nil? and qrcode_storage.nil?
     end
@@ -83,18 +80,14 @@ module HasQrcode::Model
     end
   end
   
-  module ClassMethods
-    def after_generate(method_name=nil)
-      return @after_generate if method_name.nil?
-      @after_generate = method_name
-    end
-    
+  module ClassMethods    
     def has_qrcode(options={})
       attr_reader :qrcode_config, :qrcode_storage
       class_attribute :qrcode_options
       self.qrcode_options = options
       
-      self.after_save :generate_qrcode
+      self.before_save :generate_qrcode
+      self.after_save  :copy_qrcode_images
     end
   end
 end
