@@ -1,5 +1,5 @@
 namespace :qrcode do
-  task :require do
+  task :require => [:environment] do
     begin
       require 'progress_bar'
     rescue LoadError
@@ -8,7 +8,7 @@ namespace :qrcode do
   end
   
   desc "Generate qrcode image on a specified model"
-  task :generate, [:model_name, :scope_name, :scope_value] => [ 'qrcode:require', :environment] do |t, args|
+  task :generate, [:model_name, :scope_name, :scope_value] => [ 'qrcode:require'] do |t, args|
     model_name, scope_name, scope_value = args.model_name, args.scope_name, args.scope_value
     
     raise "Model '#{model_name}' is missing." if model_name.blank?

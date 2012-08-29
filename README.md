@@ -100,6 +100,7 @@ In your rails application in test environment, add `stub_request: true` in your 
 To turn off the callback that generates qrcode images, call one of the followings in your spec support helper.
 
   - Listing.skip_callback(:save, :after, :generate_qrcode)
+  - Listing.skip_callback(:save, :before, :generate_qrcode)
   - Listing.reset_callbacks(:save)
     
 ### TODO
