@@ -81,6 +81,13 @@ describe "Model with has_qrcode" do
 
     @listing.qrcode_exist?("png").should eq(true)
   end
+
+  it "should generate when the record is saved" do
+    @listing.save
+    @listing.reload
+
+    @listing.qrcode_exist?("png").should eq(true)
+  end
 end
 
 describe "Hook before_save" do
@@ -94,6 +101,7 @@ describe "Hook before_save" do
     @listing.save
     
     Dir.glob("/tmp/public/system/listings/101/*.png").count.should > 0
+    @listing.qrcode_exist?("png").should eq(true)
   end
 end
 

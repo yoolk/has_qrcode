@@ -31,7 +31,8 @@ module HasQrcode::Model
       # run this only if it is existing record. it'll run this automatically if it is new_record?
       unless new_record?
         copy_qrcode_images
-        self.class.update_all({ qrcode_filename: self.qrcode_filename, updated_at: Time.now.utc }, { id: self.id })
+        self.class.update_all({ qrcode_filename: self.qrcode_filename, updated_at: Time.now.utc }, { "#{self.class.primary_key}" => self.id })
+        @qrcode_done = true
       end
     end
     
@@ -50,7 +51,10 @@ module HasQrcode::Model
     
     private
     def copy_qrcode_images
-      qrcode_storage.copy_to_location(@qrcode_image_paths) if @qrcode_image_paths.present?
+      unless @qrcode_done
+        qrcode_storage.copy_to_location(@qrcode_image_paths)
+        @qrcode_done = true
+      end
     end
 
     def qrcode_setup_if_not_exist
@@ -58,6 +62,7 @@ module HasQrcode::Model
     end
     
     def qrcode_setup(options={})
+      @qrcode_done = false
       new_options = process_qrcode_options(qrcode_options.merge(options))
       @qrcode_config = HasQrcode::Configuration.new(new_options)
       HasQrcode::Processor.backend = qrcode_config.backend_name
