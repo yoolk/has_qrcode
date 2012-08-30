@@ -77,7 +77,8 @@ describe "Model with has_qrcode" do
   
   it "should return true if the file exist" do
     @listing.generate_qrcode
-    
+    @listing.reload
+
     @listing.qrcode_exist?("png").should eq(true)
   end
 end

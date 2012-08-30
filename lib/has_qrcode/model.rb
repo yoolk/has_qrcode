@@ -28,8 +28,11 @@ module HasQrcode::Model
       # generate new filename
       self.qrcode_filename = SecureRandom.hex(16)
       
-      # copy to location
-      copy_qrcode_images unless new_record?
+      # run this only if it is existing record. it'll run this automatically if it is new_record?
+      unless new_record?
+        copy_qrcode_images
+        self.class.update_all({ qrcode_filename: self.qrcode_filename, updated_at: Time.now.utc }, { id: self.id })
+      end
     end
     
     def qrcode_url(format)
