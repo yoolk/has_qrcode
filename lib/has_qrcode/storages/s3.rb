@@ -38,6 +38,10 @@ class HasQrcode::Storage::S3
   def file_exist?(format)
     s3_bucket.objects[s3_key(format)].exists?
   end
+
+  def outdated?(format)
+    s3_bucket.objects[s3_key(format)].last_modified < active_record.updated_at
+  end
   
   def generate_url(format)
     s3_bucket.objects[s3_key(format)].public_url

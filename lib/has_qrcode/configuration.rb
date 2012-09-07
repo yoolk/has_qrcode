@@ -29,7 +29,7 @@ class HasQrcode::Configuration
       :bgcolor  => "fff",
       :format   => "png",
       :backend  => :qr_server,
-      :storage  => { :filesystem => { :path => ":rails_root/public/system/:table_name/:id/:filename.:format" } }
+      :storage  => { :filesystem => { :path => ":rails_root/public/system/:table_name/:id/:qrcode_filename.:format" } }
     }
     defaults.merge(options)
   end

@@ -35,6 +35,11 @@ module HasQrcode::Model
         @qrcode_done = true
       end
     end
+
+    def generate_qrcode_if_outdated!
+      format = qrcode_options[:format]
+      generate_qrcode if !qrcode_exist?(format) || qrcode_storage.outdated?(format)
+    end
     
     def qrcode_url(format)
       qrcode_setup_if_not_exist

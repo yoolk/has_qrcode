@@ -12,7 +12,7 @@ class HasQrcode::Storage::Filesystem
     remove_archives
     
     from_paths.each do |from_path|
-      to_path = generate_to_path(path, active_record, :format => File.extname(from_path)[1..-1], :filename => active_record.qrcode_filename)
+      to_path = generate_to_path(path, active_record, :format => File.extname(from_path)[1..-1])
       
       FileUtils.mkdir_p(File.dirname(to_path))
       FileUtils.mv(from_path, to_path, :force => true)
@@ -20,16 +20,16 @@ class HasQrcode::Storage::Filesystem
   end
   
   def remove_archives
-    file_path = generate_to_path(path, active_record, :filename => active_record.qrcode_filename_was, :format => "*")
+    file_path = generate_to_path(path, active_record, :qrcode_filename => active_record.qrcode_filename_was, :format => "*")
     FileUtils.rm_rf Dir.glob(file_path)
   end
   
   def generate_url(format)
-    generate_to_path(path, active_record, :format => format, :filename => active_record.qrcode_filename).gsub(/^#{Rails.root}\/public/, "")
+    generate_to_path(path, active_record, :format => format).gsub(/^#{Rails.root}\/public/, "")
   end
   
   def file_exist?(format)
-    filepath = generate_to_path(path, active_record, :format => format, :filename => active_record.qrcode_filename)
+    filepath = generate_to_path(path, active_record, :format => format)
     
     File.exist?(filepath)
   end
@@ -49,12 +49,12 @@ class HasQrcode::Storage::Filesystem
     segments = path.scan(/:\w+/)
     segments.each do |key|
       key = key[1..-1].to_sym
-      value = if active_record.respond_to?(key)
+      value = if values.key?(key)
+        values[key]
+      elsif active_record.respond_to?(key)
         active_record.send(key)
       elsif active_record.class.respond_to?(key)
         active_record.class.send(key)
-      else
-        values[key]
       end
 
       generated_path.gsub!(/:#{key}/, value.to_s)
