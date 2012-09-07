@@ -27,6 +27,12 @@ class HasQrcode::Storage::Filesystem
   def generate_url(format)
     generate_to_path(path, active_record, :format => format).gsub(/^#{Rails.root}\/public/, "")
   end
+
+  def outdated?(format)
+    filepath = generate_to_path(path, active_record, :format => format)
+
+    File.ctime(filepath).utc < active_record.updated_at
+  end
   
   def file_exist?(format)
     filepath = generate_to_path(path, active_record, :format => format)
